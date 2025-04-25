@@ -1,10 +1,7 @@
 package com.example.user1.exceptionHandler;
 
 
-import com.example.user1.exceptions.CustomErrorResponse;
-import com.example.user1.exceptions.SlotOccupiedException;
-import com.example.user1.exceptions.UserNotFoundException;
-import com.example.user1.exceptions.VehicleAlreadyCheckedOutException;
+import com.example.user1.exceptions.*;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
@@ -47,8 +44,8 @@ public class GlobalErrorHandler extends AbstractErrorWebExceptionHandler {
     private Mono<ServerResponse> renderErrorResponse(ServerRequest request, ErrorAttributes errorAttributes) {
         Throwable error = errorAttributes.getError(request);
 
-        if (error instanceof UserNotFoundException) {
-            return handleBookNotFound((UserNotFoundException) error, request);
+        if (error instanceof UserNotFoundException || error instanceof NoSlotAvailableException) {
+            return handleNotFound( error, request);
         }
 
         if (error instanceof VehicleAlreadyCheckedOutException || error instanceof SlotOccupiedException) {
@@ -58,7 +55,7 @@ public class GlobalErrorHandler extends AbstractErrorWebExceptionHandler {
         return handleGenericError(error, request);
     }
 
-    private Mono<ServerResponse> handleBookNotFound(UserNotFoundException ex, ServerRequest request) {
+    private Mono<ServerResponse> handleNotFound(Throwable ex, ServerRequest request) {
         CustomErrorResponse errorResponse = new CustomErrorResponse(
             HttpStatus.NOT_FOUND.value(),
             ex.getMessage(),

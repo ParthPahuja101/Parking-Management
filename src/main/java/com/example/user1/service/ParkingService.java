@@ -2,6 +2,7 @@ package com.example.user1.service;
 
 import com.example.user1.Repository.ParkingRecordRepository;
 import com.example.user1.Repository.ParkingSlotRepository;
+import com.example.user1.exceptions.NoSlotAvailableException;
 import com.example.user1.exceptions.SlotOccupiedException;
 import com.example.user1.exceptions.VehicleAlreadyCheckedOutException;
 import com.example.user1.models.ParkingRecord;
@@ -32,7 +33,7 @@ public class ParkingService {
     }
 
     public Flux<ParkingSlot> getFreeParkingSlot(String type) {
-        return parkingSlotRepository.findByIsOccupiedFalseAndType(type);
+        return parkingSlotRepository.findByIsOccupiedFalseAndType(type).switchIfEmpty(Flux.error(new NoSlotAvailableException("Oh no! Looks like we have no parking available for type- "+type)));
     }
 
     @Transactional
